@@ -2,16 +2,16 @@
 #include"main.h"
 
 
- void Step_Motor::start(int direction)
+ void Step_Motor::turn_on(int direction)
 {
 	HAL_GPIO_WritePin(this->DIR_GPIO_Port, this->DIR_Pin, (GPIO_PinState)direction);
 	this->direction=direction;
-	this->is_running=true;
+	this->is_turned_on=true;
 }
 
 void Step_Motor::run()
 {
-	if(is_running){
+	if(is_turned_on){
 
 	if(this->position<=this->final_position && this->position>=0)
 	{
@@ -43,14 +43,14 @@ void Step_Motor::init(GPIO_TypeDef* STEP_GPIO_Port,	uint16_t STEP_Pin, GPIO_Type
 
 	this->position=0;
 
-	this->start(SM_DOWN);
+	this->turn_on(SM_LEFT);
 	//dociera do krancowki na pozycji 0
 	while(HAL_GPIO_ReadPin(this->INIT_SEQ_GPIO_Port, this->INIT_SEQ_Pin)==GPIO_PIN_RESET)
 	{
 		this->run();
 	}
 
-	this->start(SM_UP);
+	this->turn_on(SM_RIGHT);
 	//dociera na koniec do pozycji startowej
 	for(int i=0; i<=this->final_position;i++)
 	{

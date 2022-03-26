@@ -63,9 +63,9 @@ UART_HandleTypeDef huart3;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
-osThreadId Step_MotorsHandle;
-osThreadId DC_MotorsHandle;
-osTimerId Sensor_DataHandle;
+osThreadId MotorsHandle;
+osThreadId SensorsHandle;
+osTimerId Send_dataHandle;
 /* USER CODE BEGIN PV */
 
 LSM6 IMU_1;
@@ -86,9 +86,9 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM2_Init(void);
-void Step_Motors_Control_Method(void const *argument);
-void DC_Motors_Control_Method(void const *argument);
-void Sensor_Data_Callback(void const * argument);
+void Motors_control_method(void const * argument);
+void Sensor_reading_method(void const * argument);
+void Send_data_via_UART(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -113,11 +113,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 			}
 	if(rx_buffer==UP)
 			{
-				SM_1.start(SM_UP);
+				SM_1.turn_on(SM_RIGHT);
 			}
 	if(rx_buffer==DOWN)
 			{
-				SM_1.start(SM_DOWN);
+				SM_1.turn_on(SM_LEFT);
 			}
 	HAL_UART_Receive_IT(&huart3, (uint8_t*) &rx_buffer, 1);
 }
@@ -159,9 +159,6 @@ int main(void) {
 	/* USER CODE BEGIN 2 */
 	HAL_TIM_Base_Start(&htim3);
 
-	/* Sensor_Control */
-	IMU_1.init(hi2c1, IMU_1.device_DS33, IMU_1.sa0_high);
-	DHT22_1.init(&htim3, 96, DHT22_GPIO_Port, DHT22_Pin);
 	/* USER CODE END 2 */
 
 	/* USER CODE BEGIN RTOS_MUTEX */
@@ -173,9 +170,9 @@ int main(void) {
 	/* USER CODE END RTOS_SEMAPHORES */
 
 	/* USER CODE BEGIN RTOS_TIMERS */
-	osTimerDef(Sensor_Data, Sensor_Data_Callback);
-	Sensor_DataHandle = osTimerCreate(osTimer(Sensor_Data), osTimerPeriodic, NULL);
-	osTimerStart(Sensor_DataHandle, 1000);
+	 osTimerDef(Send_data, Send_data_via_UART);
+	 Send_dataHandle = osTimerCreate(osTimer(Send_data), osTimerPeriodic, NULL);
+	 osTimerStart(Send_DataHandle, 1000);
 	/* USER CODE END RTOS_TIMERS */
 
 	/* USER CODE BEGIN RTOS_QUEUES */
@@ -183,14 +180,13 @@ int main(void) {
 	/* USER CODE END RTOS_QUEUES */
 
 	/* Create the thread(s) */
-	/* definition and creation of Step_Motors */
-	osThreadDef(Step_Motors, Step_Motors_Control_Method, osPriorityAboveNormal,
-			0, 128);
-	Step_MotorsHandle = osThreadCreate(osThread(Step_Motors), NULL);
+	/* definition and creation of Motors */
+	  osThreadDef(Motors, Motors_control_method, osPriorityHigh, 0, 128);
+	  MotorsHandle = osThreadCreate(osThread(Motors), NULL);
 
-	/* definition and creation of DC_Motors */
-	osThreadDef(DC_Motors, DC_Motors_Control_Method, osPriorityHigh, 0, 128);
-	DC_MotorsHandle = osThreadCreate(osThread(DC_Motors), NULL);
+	  /* definition and creation of Sensors */
+	  osThreadDef(Sensors, Sensor_reading_method, osPriorityNormal, 0, 128);
+	  SensorsHandle = osThreadCreate(osThread(Sensors), NULL);
 
 
 	/* USER CODE BEGIN RTOS_THREADS */
@@ -570,59 +566,65 @@ static void MX_GPIO_Init(void) {
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_Step_Motors_Control_Method */
+/* USER CODE BEGIN Header_Motors_control_method */
 /**
- * @brief  Function implementing the Step_Motors thread.
- * @param  argument: Not used
- * @retval None
- */
-/* USER CODE END Header_Step_Motors_Control_Method */
-void Step_Motors_Control_Method(void const *argument) {
-
-	SM_1.init(SM1_STEP_GPIO_Port, SM1_STEP_Pin, SM1_DIR_GPIO_Port, SM1_DIR_Pin,
-			SM1_INIT_SEQUENCE_GPIO_Port, SM1_INIT_SEQUENCE_Pin);
-
-	HAL_UART_Receive_IT(&huart3, (uint8_t*) &rx_buffer, 1);
-	/* USER CODE BEGIN 5 */
-	/* Infinite loop */
-	for (;;) {
-		SM_1.run();
-		osDelay(1);
-	}
-	/* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_DC_Motors_Control_Method */
-/**
- * @brief Function implementing the DC_Motors thread.
- * @param argument: Not used
- * @retval None
- */
-/* USER CODE END Header_DC_Motors_Control_Method */
-void DC_Motors_Control_Method(void const *argument) {
-	/* USER CODE BEGIN DC_Motors_Control_Method */
-	/* Infinite loop */
-	for (;;) {
-		osDelay(1);
-	}
-	/* USER CODE END DC_Motors_Control_Method */
-}
-
-/* Sensor_Data_Callback function */
-void Sensor_Data_Callback(void const * argument)
+  * @brief  Function implementing the Motors thread.
+  * @param  argument: Not used
+  * @retval None
+  */
+/* USER CODE END Header_Motors_control_method */
+void Motors_control_method(void const * argument)
 {
-  /* USER CODE BEGIN Sensor_Data_Callback */
-	IMU_1.read();
-	DHT22_1.read();
+  /* USER CODE BEGIN 5 */
 
+	/* Step motors init */
+	SM_1.init(SM1_STEP_GPIO_Port, SM1_STEP_Pin, SM1_DIR_GPIO_Port, SM1_DIR_Pin,
+				SM1_INIT_SEQUENCE_GPIO_Port, SM1_INIT_SEQUENCE_Pin);
+
+HAL_UART_Receive_IT(&huart3, (uint8_t*) &rx_buffer, 1);
+  /* Infinite loop */
+  for(;;)
+  {
+	  SM_1.run();
+    osDelay(1);
+  }
+  /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_Sensor_reading_method */
+/**
+* @brief Function implementing the Sensors thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_Sensor_reading_method */
+void Sensor_reading_method(void const * argument)
+{
+  /* USER CODE BEGIN Sensor_reading_method */
+	IMU_1.init(hi2c1, IMU_1.device_DS33, IMU_1.sa0_high);
+	DHT22_1.init(&htim3, 96, DHT22_GPIO_Port, DHT22_Pin);
+  /* Infinite loop */
+  for(;;)
+  {
+	  IMU_1.read();
+	  	DHT22_1.read();
+    osDelay(1);
+  }
+  /* USER CODE END Sensor_reading_method */
+}
+
+/* Send_data_via_UART function */
+void Send_data_via_UART(void const * argument)
+{
+  /* USER CODE BEGIN Send_data_via_UART */
 	n = sprintf(tx_buffer, "[[%1.f,%1.f],[%0.1f,%0.1f,%0.1f,%0.1f,%0.1f,%0.1f]]",
 			DHT22_1.temperature, DHT22_1.humidity,
 			IMU_1.g_scaled.x, IMU_1.g_scaled.y, IMU_1.g_scaled.z,
 			IMU_1.a_scaled.x, IMU_1.a_scaled.y, IMU_1.a_scaled.z);
-
-//HAL_UART_Transmit(&huart3, (uint8_t*) tx_buffer, n, 100);
-  /* USER CODE END Sensor_Data_Callback */
+	HAL_UART_Transmit(&huart3, (uint8_t*) tx_buffer, n, 100);
+  /* USER CODE END Send_data_via_UART */
 }
+
 
 
 /**
