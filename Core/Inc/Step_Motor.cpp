@@ -28,7 +28,7 @@ void Step_Motor::run()
 void Step_Motor::stop()
 {
 	HAL_GPIO_WritePin(this->STEP_GPIO_Port, this->STEP_Pin, GPIO_PIN_RESET);
-	this->is_running=false;
+	this->is_turned_on=false;
 }
 
 

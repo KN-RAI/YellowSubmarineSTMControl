@@ -1,17 +1,17 @@
 ../Core/Inc/Step_Motor.h:12:7:Step_Motor::Step_Motor()	16	static
-../Core/Src/main.cpp:102:6:void HAL_GPIO_EXTI_Callback(uint16_t)	16	static
-../Core/Src/main.cpp:108:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	16	static
-../Core/Src/main.cpp:131:5:int main()	160	static
-../Core/Src/main.cpp:218:6:void SystemClock_Config()	88	static
-../Core/Src/main.cpp:268:13:void MX_I2C1_Init()	8	static
-../Core/Src/main.cpp:311:13:void MX_TIM3_Init()	40	static
-../Core/Src/main.cpp:353:13:void MX_TIM2_Init()	40	static
-../Core/Src/main.cpp:398:13:void MX_USART3_UART_Init()	8	static
-../Core/Src/main.cpp:431:13:void MX_USB_OTG_FS_PCD_Init()	8	static
-../Core/Src/main.cpp:464:13:void MX_GPIO_Init()	56	static
-../Core/Src/main.cpp:580:6:void Step_Motors_Control_Method(const void*)	32	static
-../Core/Src/main.cpp:602:6:void DC_Motors_Control_Method(const void*)	16	static
-../Core/Src/main.cpp:612:6:void Sensor_Data_Callback(const void*)	72	static
-../Core/Src/main.cpp:632:6:void Error_Handler()	4	static,ignoring_inline_asm
-../Core/Src/main.cpp:639:1:void __static_initialization_and_destruction_0(int, int)	16	static
-../Core/Src/main.cpp:639:1:cpp)	8	static
+../Core/Src/main.cpp:103:6:void HAL_GPIO_EXTI_Callback(uint16_t)	16	static
+../Core/Src/main.cpp:109:6:void HAL_UART_RxCpltCallback(UART_HandleTypeDef*)	16	static
+../Core/Src/main.cpp:138:5:int main()	80	static
+../Core/Src/main.cpp:222:6:void SystemClock_Config()	88	static
+../Core/Src/main.cpp:280:13:void MX_I2C1_Init()	8	static
+../Core/Src/main.cpp:328:13:void MX_TIM2_Init()	64	static
+../Core/Src/main.cpp:386:13:void MX_TIM3_Init()	40	static
+../Core/Src/main.cpp:431:13:void MX_USART3_UART_Init()	8	static
+../Core/Src/main.cpp:466:13:void MX_USB_OTG_FS_PCD_Init()	8	static
+../Core/Src/main.cpp:501:13:void MX_GPIO_Init()	56	static
+../Core/Src/main.cpp:630:6:void Motors_control_method(const void*)	16	static
+../Core/Src/main.cpp:665:6:void Sensor_reading_method(const void*)	104	static
+../Core/Src/main.cpp:681:6:void Send_data_via_UART(const void*)	72	static
+../Core/Src/main.cpp:698:6:void Error_Handler()	4	static,ignoring_inline_asm
+../Core/Src/main.cpp:705:1:void __static_initialization_and_destruction_0(int, int)	16	static
+../Core/Src/main.cpp:705:1:cpp)	8	static

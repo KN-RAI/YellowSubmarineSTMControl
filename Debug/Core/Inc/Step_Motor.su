@@ -1,4 +1,4 @@
-../Core/Inc/Step_Motor.cpp:5:7:void Step_Motor::start(int)	16	static
+../Core/Inc/Step_Motor.cpp:5:7:void Step_Motor::turn_on(int)	16	static
 ../Core/Inc/Step_Motor.cpp:12:6:void Step_Motor::run()	16	static
 ../Core/Inc/Step_Motor.cpp:28:6:void Step_Motor::stop()	16	static
 ../Core/Inc/Step_Motor.cpp:35:6:void Step_Motor::init(GPIO_TypeDef*, uint16_t, GPIO_TypeDef*, uint16_t, GPIO_TypeDef*, uint16_t)	32	static
