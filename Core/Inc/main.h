@@ -72,6 +72,8 @@ void Error_Handler(void);
 #define SM2_STEP_GPIO_Port GPIOF
 #define MCO_Pin GPIO_PIN_0
 #define MCO_GPIO_Port GPIOH
+#define SM1_EN_Pin GPIO_PIN_1
+#define SM1_EN_GPIO_Port GPIOH
 #define SM1_STEP_Pin GPIO_PIN_0
 #define SM1_STEP_GPIO_Port GPIOC
 #define RMII_MDC_Pin GPIO_PIN_1
