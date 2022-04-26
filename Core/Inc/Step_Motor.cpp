@@ -45,7 +45,7 @@ void Step_Motor::init(GPIO_TypeDef* STEP_GPIO_Port,	uint16_t STEP_Pin,GPIO_TypeD
 	this->INIT_SEQ_GPIO_Port=INIT_SEQ_GPIO_Port;
 	this->INIT_SEQ_Pin=INIT_SEQ_Pin;
 
-	//dociera do krancowki na pozycji 0
+	// dociera do krancowki na pozycji 0
 	while(HAL_GPIO_ReadPin(this->INIT_SEQ_GPIO_Port, this->INIT_SEQ_Pin)==GPIO_PIN_RESET)
 	{
 		step(SM_LEFT);

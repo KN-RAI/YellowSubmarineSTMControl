@@ -97,8 +97,8 @@ void Error_Handler(void);
 #define LD1_GPIO_Port GPIOB
 #define DC1_ENABLE_Pin GPIO_PIN_0
 #define DC1_ENABLE_GPIO_Port GPIOG
-#define DC1_ENABLEG1_Pin GPIO_PIN_1
-#define DC1_ENABLEG1_GPIO_Port GPIOG
+#define DC2_ENABLE_Pin GPIO_PIN_1
+#define DC2_ENABLE_GPIO_Port GPIOG
 #define RMII_TXD1_Pin GPIO_PIN_13
 #define RMII_TXD1_GPIO_Port GPIOB
 #define LD3_Pin GPIO_PIN_14

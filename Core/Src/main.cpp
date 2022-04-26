@@ -40,10 +40,10 @@
 #define UP '1'      // wlacza silniki krokowe, obroty w prawo
 #define DOWN '2'    // wlacza silniki krokowe, obroty w lewo
 
-#define STOP_HORIZONTAL '3'  // wylacza oba silniki dc
-#define STRAIGHT '4' // wlacza silniki dc, oba ta sama predkosc
-#define LEFT '5'	   // wlacza lewy silnik dc
-#define RIGHT '6'    // wlacza prawy silniki dc
+#define STOP_HORIZONTAL 'SP'  // wylacza oba silniki dc
+#define STRAIGHT 'S' // wlacza silniki dc, oba ta sama predkosc
+#define LEFT 'L'	   // wlacza lewy silnik dc
+#define RIGHT 'R'    // wlacza prawy silniki dc
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -68,14 +68,15 @@ osThreadId SensorsHandle;
 osTimerId Send_dataHandle;
 /* USER CODE BEGIN PV */
 DHT22 DHT22_1;
+LSM6 IMU_1;
 
 int SM_DIRECTION = SM_STOP;
-int DC1_DIRECTION = DC_STOP;
-int DC2_DIRECTION = DC_STOP;
-int DC1_VELOCITY = 0;
-int DC1_VELOCITY = 0;
+char DC1_DIRECTION = DC_OFF;
+char DC2_DIRECTION = DC_OFF;
+float DC1_VELOCITY = 0.0;
+float DC2_VELOCITY = 0.0;
 // USART COMMUNICATION BUFFERS
-char rx_buffer;
+char rx_buffer[2];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -105,18 +106,40 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin) {
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-	if (rx_buffer == STOP_VERTICAL) {
+	if (rx_buffer[0] == STOP_VERTICAL) {
 		SM_DIRECTION = SM_STOP;
 	}
-	if (rx_buffer == UP) {
+	if (rx_buffer[0] == UP) {
 		SM_DIRECTION = SM_RIGHT;
 	}
-	if (rx_buffer == DOWN) {
+	if (rx_buffer[0] == DOWN) {
 		SM_DIRECTION = SM_LEFT;
-	} else {
-		a = rx_buffer - '0';
 	}
-	HAL_UART_Receive_IT(&huart3, (uint8_t*) &rx_buffer, 1);
+	if(rx_buffer[0]=='S' && rx_buffer[1]=='P')
+	{
+		DC1_DIRECTION=DC_OFF;
+		DC2_DIRECTION=DC_OFF;
+	}
+	if(rx_buffer[0]=='L' && rx_buffer[1]!='P')
+		{
+			DC1_DIRECTION=DC_ON;
+			DC2_DIRECTION=DC_OFF;
+			DC1_VELOCITY=rx_buffer[1]-'0';
+		}
+	if(rx_buffer[0]=='R' && rx_buffer[1]!='P')
+		{
+			DC1_DIRECTION=DC_OFF;
+			DC2_DIRECTION=DC_ON;
+			DC2_VELOCITY=rx_buffer[1]-'0';
+		}
+	if(rx_buffer[0]=='S' && rx_buffer[1]!='P')
+		{
+			DC1_DIRECTION=DC_ON;
+			DC2_DIRECTION=DC_ON;
+			DC1_VELOCITY=rx_buffer[1]-'0';
+			DC2_VELOCITY=rx_buffer[1]-'0';
+		}
+	HAL_UART_Receive_IT(&huart3, (uint8_t*) &rx_buffer, 2);
 }
 
 /* USER CODE END 0 */
@@ -323,7 +346,7 @@ static void MX_TIM2_Init(void) {
 	htim2.Instance = TIM2;
 	htim2.Init.Prescaler = 9600;
 	htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-	htim2.Init.Period = 999;
+	htim2.Init.Period = 99;
 	htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
 	htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
 	if (HAL_TIM_Base_Init(&htim2) != HAL_OK) {
@@ -517,6 +540,7 @@ static void MX_USB_OTG_FS_PCD_Init(void)
 
 }
 
+
 /**
   * @brief GPIO Initialization Function
   * @param None
@@ -548,7 +572,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, LD1_Pin|LD3_Pin|LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOG, DC1_ENABLE_Pin|DC1_ENABLEG1_Pin|USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOG, DC1_ENABLE_Pin|DC2_ENABLE_Pin|USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SM2_EN_GPIO_Port, SM2_EN_Pin, GPIO_PIN_RESET);
@@ -615,8 +639,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : DC1_ENABLE_Pin DC1_ENABLEG1_Pin USB_PowerSwitchOn_Pin */
-  GPIO_InitStruct.Pin = DC1_ENABLE_Pin|DC1_ENABLEG1_Pin|USB_PowerSwitchOn_Pin;
+  /*Configure GPIO pins : DC1_ENABLE_Pin DC2_ENABLE_Pin USB_PowerSwitchOn_Pin */
+  GPIO_InitStruct.Pin = DC1_ENABLE_Pin|DC2_ENABLE_Pin|USB_PowerSwitchOn_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -680,25 +704,26 @@ void Motors_control_method(void const *argument) {
 	DC_Motor DC_2;
 
 	/* Step motors init */
-	SM_1.init(SM1_STEP_GPIO_Port, SM1_STEP_Pin, SM1_EN_GPIO_Port, SM1_EN_Pin,
-				SM1_DIR_GPIO_Port, SM1_DIR_Pin, SM1_INIT_SEQUENCE_GPIO_Port, SM1_INIT_SEQUENCE_Pin);
+	//SM_1.init(SM1_STEP_GPIO_Port, SM1_STEP_Pin, SM1_EN_GPIO_Port, SM1_EN_Pin,
+			//	SM1_DIR_GPIO_Port, SM1_DIR_Pin, SM1_INIT_SEQUENCE_GPIO_Port, SM1_INIT_SEQUENCE_Pin);
 
-	SM_2.init(SM2_STEP_GPIO_Port, SM2_STEP_Pin,  SM2_EN_GPIO_Port, SM2_EN_Pin,
-				SM2_DIR_GPIO_Port, SM2_DIR_Pin, SM2_INIT_SEQUENCE_GPIO_Port, SM2_INIT_SEQUENCE_Pin);
+	//SM_2.init(SM2_STEP_GPIO_Port, SM2_STEP_Pin,  SM2_EN_GPIO_Port, SM2_EN_Pin,
+				//SM2_DIR_GPIO_Port, SM2_DIR_Pin, SM2_INIT_SEQUENCE_GPIO_Port, SM2_INIT_SEQUENCE_Pin);
 
 	/* DC motors init */
-	DC_1.init(DC1_ENABLE_GPIO_Port, DC1_ENABLE_Pinn, htim2);
-	DC_2.init(DC1_ENABLE_GPIO_Port, DC1_ENABLE_Pinn, htim4);
+	DC_1.init(DC1_ENABLE_GPIO_Port, DC1_ENABLE_Pin, &htim2);
+	DC_2.init(DC2_ENABLE_GPIO_Port, DC2_ENABLE_Pin, &htim4);
+
 
 	/* Start communication */
-	HAL_UART_Receive_IT(&huart3, (uint8_t*) &rx_buffer, 1);
+	HAL_UART_Receive_IT(&huart3, (uint8_t*) &rx_buffer, 2);
 	/* Infinite loop */
 	for (;;) {
-		SM_1.run(SM_DIRECTION);
-		SM_2.run(SM_DIRECTION);
+		//SM_1.run(SM_DIRECTION);
+		//SM_2.run(SM_DIRECTION);
 
 		DC_1.run(DC1_DIRECTION, DC1_VELOCITY);
-		DC_2.run(DC2_DIRECTION, DC2_VELOCITY)
+		DC_2.run(DC2_DIRECTION, DC2_VELOCITY);
 
 		osDelay(1);
 	}
@@ -714,7 +739,7 @@ void Motors_control_method(void const *argument) {
 /* USER CODE END Header_Sensor_reading_method */
 void Sensor_reading_method(void const *argument) {
 	/* USER CODE BEGIN Sensor_reading_method */
-	LSM6 IMU_1;
+
 
 	IMU_1.init(hi2c1, IMU_1.device_DS33, IMU_1.sa0_high);
 	DHT22_1.init(&htim3, 96, DHT22_GPIO_Port, DHT22_Pin);
@@ -736,7 +761,7 @@ void Send_data_via_UART(void const *argument) {
 			DHT22_1.temperature, DHT22_1.humidity, IMU_1.g_scaled.x,
 			IMU_1.g_scaled.y, IMU_1.g_scaled.z, IMU_1.a_scaled.x,
 			IMU_1.a_scaled.y, IMU_1.a_scaled.z);
-	HAL_UART_Transmit(&huart3, (uint8_t*) tx_buffer, n, 5000);
+	//HAL_UART_Transmit(&huart3, (uint8_t*) tx_buffer, n, 5000);
 	/* USER CODE END Send_data_via_UART */
 }
 

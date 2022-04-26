@@ -28,7 +28,7 @@ class Step_Motor
 	void step(int direction);
 
  public:
-  void init(GPIO_TypeDef    *STEP_GPIO_Port,
+  void init( GPIO_TypeDef    *STEP_GPIO_Port,
 	uint16_t    	STEP_Pin,
 	GPIO_TypeDef    *EN_GPIO_Port,
 		uint16_t    	EN_Pin,

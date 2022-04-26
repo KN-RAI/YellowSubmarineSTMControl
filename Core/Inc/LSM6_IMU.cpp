@@ -91,7 +91,7 @@ void LSM6::writeReg(uint8_t reg, uint8_t value)
 {
 	uint8_t command=value;
 	HAL_I2C_Mem_Write(&this->hi2c,address_shl, reg, 1, &command, sizeof(command), 100);
-
+\
 }
 
 uint8_t LSM6::readReg(uint8_t reg)

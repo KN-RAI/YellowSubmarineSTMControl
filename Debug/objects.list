@@ -1,3 +1,4 @@
+"./Core/Inc/DC_Motor.o"
 "./Core/Inc/DHT22_TempHumidity.o"
 "./Core/Inc/LSM6_IMU.o"
 "./Core/Inc/Step_Motor.o"

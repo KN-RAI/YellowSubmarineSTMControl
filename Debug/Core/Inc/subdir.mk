@@ -5,16 +5,19 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../Core/Inc/DC_Motor.cpp \
 ../Core/Inc/DHT22_TempHumidity.cpp \
 ../Core/Inc/LSM6_IMU.cpp \
 ../Core/Inc/Step_Motor.cpp 
 
 OBJS += \
+./Core/Inc/DC_Motor.o \
 ./Core/Inc/DHT22_TempHumidity.o \
 ./Core/Inc/LSM6_IMU.o \
 ./Core/Inc/Step_Motor.o 
 
 CPP_DEPS += \
+./Core/Inc/DC_Motor.d \
 ./Core/Inc/DHT22_TempHumidity.d \
 ./Core/Inc/LSM6_IMU.d \
 ./Core/Inc/Step_Motor.d 
@@ -27,7 +30,7 @@ Core/Inc/%.o Core/Inc/%.su: ../Core/Inc/%.cpp Core/Inc/subdir.mk
 clean: clean-Core-2f-Inc
 
 clean-Core-2f-Inc:
-	-$(RM) ./Core/Inc/DHT22_TempHumidity.d ./Core/Inc/DHT22_TempHumidity.o ./Core/Inc/DHT22_TempHumidity.su ./Core/Inc/LSM6_IMU.d ./Core/Inc/LSM6_IMU.o ./Core/Inc/LSM6_IMU.su ./Core/Inc/Step_Motor.d ./Core/Inc/Step_Motor.o ./Core/Inc/Step_Motor.su
+	-$(RM) ./Core/Inc/DC_Motor.d ./Core/Inc/DC_Motor.o ./Core/Inc/DC_Motor.su ./Core/Inc/DHT22_TempHumidity.d ./Core/Inc/DHT22_TempHumidity.o ./Core/Inc/DHT22_TempHumidity.su ./Core/Inc/LSM6_IMU.d ./Core/Inc/LSM6_IMU.o ./Core/Inc/LSM6_IMU.su ./Core/Inc/Step_Motor.d ./Core/Inc/Step_Motor.o ./Core/Inc/Step_Motor.su
 
 .PHONY: clean-Core-2f-Inc
 
