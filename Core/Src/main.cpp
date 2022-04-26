@@ -76,7 +76,7 @@ char DC2_DIRECTION = DC_OFF;
 float DC1_VELOCITY = 0.0;
 float DC2_VELOCITY = 0.0;
 // USART COMMUNICATION BUFFERS
-char rx_buffer[2];
+uint8_t rx_buffer[2];
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -120,26 +120,26 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 		DC1_DIRECTION=DC_OFF;
 		DC2_DIRECTION=DC_OFF;
 	}
-	if(rx_buffer[0]=='L' && rx_buffer[1]!='P')
+	if(rx_buffer[0]=='L')
 		{
 			DC1_DIRECTION=DC_ON;
 			DC2_DIRECTION=DC_OFF;
 			DC1_VELOCITY=rx_buffer[1]-'0';
 		}
-	if(rx_buffer[0]=='R' && rx_buffer[1]!='P')
+	if(rx_buffer[0]=='R')
 		{
 			DC1_DIRECTION=DC_OFF;
 			DC2_DIRECTION=DC_ON;
 			DC2_VELOCITY=rx_buffer[1]-'0';
 		}
-	if(rx_buffer[0]=='S' && rx_buffer[1]!='P')
+	if(rx_buffer[0]=='S')
 		{
 			DC1_DIRECTION=DC_ON;
 			DC2_DIRECTION=DC_ON;
 			DC1_VELOCITY=rx_buffer[1]-'0';
 			DC2_VELOCITY=rx_buffer[1]-'0';
 		}
-	HAL_UART_Receive_IT(&huart3, (uint8_t*) &rx_buffer, 2);
+	HAL_UART_Receive_IT(&huart3, &rx_buffer, 2);
 }
 
 /* USER CODE END 0 */
@@ -716,7 +716,7 @@ void Motors_control_method(void const *argument) {
 
 
 	/* Start communication */
-	HAL_UART_Receive_IT(&huart3, (uint8_t*) &rx_buffer, 2);
+	HAL_UART_Receive_IT(&huart3, &rx_buffer, 2);
 	/* Infinite loop */
 	for (;;) {
 		//SM_1.run(SM_DIRECTION);
